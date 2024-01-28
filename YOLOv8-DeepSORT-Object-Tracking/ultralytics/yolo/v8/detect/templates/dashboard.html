@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Video Upload</title>
+   <style>
+       body {
+           font-family: Arial, sans-serif;
+           background-image: url('https://cdn.pixabay.com/photo/2021/09/25/10/08/road-6654573_1280.jpg');
+           background-size: 100% 100%;
+           background-repeat: no-repeat;
+           background-position: center center;
+           margin: 0;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           min-height: 100vh;
+           padding: 0;
+       }
+
+       h1 {
+           color: white;
+           font-size: 70px;
+           text-align: center;
+       }
+
+       form {
+           text-align: center;
+           margin-top: 20px;
+       }
+
+       input[type="file"] {
+           display: none;
+       }
+
+       label {
+           display: inline-block;
+           padding: 10px 20px;
+           background-color: #f36e09;
+           color: white;
+           cursor: pointer;
+       }
+
+       button {
+           display: inline-block;
+           padding: 10px 20px;
+           background-color: #ba0900;
+           border-radius:5px;
+           color: white;
+           border: none;
+           cursor: pointer;
+           margin-top: 10px;
+       }
+
+       button.processing {
+           background-color: #4CAF50;
+       }
+
+       button.success {
+           background-color: #4e4caf;
+       }
+
+       button.disabled {
+           background-color: #9e2a13;
+           cursor: not-allowed;
+       }
+
+       button:hover {
+           background-color: #005580;
+       }
+
+       #selectedVideoName {
+           margin-top: 10px;
+       }
+
+       #processingInfo {
+           margin-top: 10px;
+           text-align: center;
+           display: none;
+           align-items: center;
+           justify-content: center;
+           color: white;
+       }
+
+       .spinner {
+           border: 4px solid rgba(0, 0, 0, 0.1);
+           border-left: 4px solid #008CBA;
+           border-radius: 50%;
+           width: 20px;
+           height: 20px;
+           animation: spin 1s linear infinite;
+           margin-right: 8px;
+       }
+
+       @keyframes spin {
+           0% { transform: rotate(0deg); }
+           100% { transform: rotate(360deg); }
+       }
+
+       .button-container {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           margin-top: 20px;
+           border-radius: 10px;
+           overflow: hidden;
+           background: rgba(255, 255, 255, 0.8);
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           width:300px;
+           height:240px;
+       }
+
+       .button-container button {
+           margin: 10px;
+       }
+   </style>
+</head>
+<body>
+   <h1>Vehicle Surveillance and Speed Enforcement System</h1>
+   <div class="button-container">
+       <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+           <input type="file" name="file" id="fileInput" accept="video/*" required onchange="displayFileName()">
+           <label for="fileInput">CHOOSE VIDEO</label>
+           <button type="submit" id="uploadButton" class="disabled">UPLOAD</button>
+           <div id="selectedVideoName"></div>
+       </form>
+       <button id="processButton" onclick="startProcessing()" class="disabled">PROCESS</button>
+       <button id="downloadButton" onclick="startDownload()" class="disabled">DOWNLOAD</button>
+   </div>
+   <div id="processingInfo">
+       <span class="spinner"></span>
+       Please wait! Processing takes time...
+   </div>
+    <button id="logoutButton" style="background-color:#007bff" onclick="logout()">LOGOUT</button>
+   <script>
+       let processingDone = false;
+       function displayFileName() {
+           var fileInput = document.getElementById('fileInput');
+           var selectedVideoName = document.getElementById('selectedVideoName');
+           var uploadButton = document.getElementById('uploadButton');
+
+           selectedVideoName.textContent = fileInput.files[0] ? fileInput.files[0].name : '';
+           uploadButton.classList.remove('disabled');
+       }
+       let processingInProgress = false;
+       function startProcessing() {
+           processingInProgress = true;
+           var processButton = document.getElementById('processButton');
+           var processingInfo = document.getElementById('processingInfo');
+           var downloadButton = document.getElementById('downloadButton');
+           var logoutButton = document.getElementById('logoutButton');
+           logoutButton.classList.add('disabled');
+           processButton.classList.add('processing');
+           processButton.textContent = 'Processing...';
+           processingInfo.style.display = 'flex';
+           downloadButton.classList.add('disabled');
+           processButton.classList.add('disabled');
+
+           fetch('/process', {
+               method: 'GET'
+           })
+           .then(response => response.json())
+           .then(data => {
+               processingInProgress = false;
+               if (data.logout) {
+                window.location.href = '/logout';
+             }
+               alert(data.message);
+               processButton.classList.remove('processing');
+               processButton.classList.add('success');
+               processButton.textContent = 'Process';
+               processingInfo.style.display = 'none';
+               processingDone = true;
+               downloadButton.classList.remove('disabled');
+               logoutButton.classList.remove('disabled');
+           })
+           .catch(error => {
+               console.error('Error:', error);
+               processButton.classList.remove('processing');
+               processButton.classList.add('error');
+               processButton.textContent = 'Process';
+               processingInfo.style.display = 'none';
+               logoutButton.classList.remove('disabled');
+               processingInProgress = false;
+           });
+       }
+       function logout() {
+        if (!processingInProgress) {
+        window.location.href = '/logout';
+        }
+      }
+
+       function startDownload() {
+           if (processingDone) {
+               window.location.href = '/download';
+           }
+       }
+
+       document.getElementById('uploadForm').addEventListener('submit', function(event) {
+           event.preventDefault();
+           var form = event.target;
+           var formData = new FormData(form);
+           fetch(form.action, {
+               method: 'POST',
+               body: formData
+           })
+           .then(response => response.json())
+           .then(data => {
+               alert(data.message);
+               var processButton = document.getElementById('processButton');
+               processButton.classList.remove('disabled');
+           })
+           .catch(error => console.error('Error:', error));
+       });
+   </script>
+</body>
+</html>

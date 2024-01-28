@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #22303C;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #FFFFFF; /* Change the color to your preferred one */
+            font-family: 'Arial', sans-serif; /* Change the font family if desired */
+            font-size: 2.7em; /* Adjust the font size as needed */
+            text-shadow: 2px 2px 4px rgba(192,192,192, 0.8); /* Add a subtle text shadow */
+        }
+
+        table {
+            margin: 30px auto;
+            width: 80%;
+            background-color:#22303C;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            color:white;
+        }
+
+        th {
+            background-color: #121212;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #15202B;
+            color:white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>USERS LIST</h1>
+        <table class="table table-bordered">
+
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Link to Bootstrap JS (optional, for some Bootstrap features) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
